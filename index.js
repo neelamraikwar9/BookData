@@ -1,29 +1,35 @@
 const { initializeDb } = require("./db.connect")
 const Book = require('./book.models')
 const express = require("express")
+const cors = require("cors")
 const app = express()
+const corsOptions = {
+    origin:"*",
+    credentials : true
+}
 
-app.use(express.json()) //middle Wear
+app.use(cors(corsOptions));
+app.use(express.json()) //Middle Wear
 
 initializeDb();
 
-const newBook = {
-  "title": "Lean In",
-  "author": "Sheryl Sandberg",
-  "publishedYear": 2012,
-  "genre": ["Non-Fiction", "Business"],
-  "language": "English",
-  "country": "United States",
-  "rating": 4.1,
-  "summary": "A book about empowering women in the workplace and achieving leadership roles.",
-  "coverImageUrl": "https://example.com/lean_in.jpg"
-};
+// const newBook = {
+//   "title": "Lean In",
+//   "author": "Sheryl Sandberg",
+//   "publishedYear": 2012,
+//   "genre": ["Non-Fiction", "Business"],
+//   "language": "English",
+//   "country": "United States",
+//   "rating": 4.1,
+//   "summary": "A book about empowering women in the workplace and achieving leadership roles.",
+//   "coverImageUrl": "https://example.com/lean_in.jpg"
+// };
 
 async function creatNewBook(newBook){
   try{
     const book = new Book(newBook)
     const bookSave = await book.save()
-    // console.log("New book data", bookSave)
+    console.log("New book data", bookSave)
     return bookSave
   } catch(error){
     throw error
@@ -45,40 +51,52 @@ async function creatNewBook(newBook){
 // })
 
 
-const secondNewBook = 
-{
-  "title": "Shoe Dog",
-  "author": "Phil Knight",
-  "publishedYear": 2016,
-  "genre": ["Autobiography", "Business"],
-  "language": "English",
-  "country": "United States",
-  "rating": 4.5,
-  "summary": "An inspiring memoir by the co-founder of Nike, detailing the journey of building a global athletic brand.",
-  "coverImageUrl": "https://example.com/shoe_dog.jpg"
-};
+// const secondNewBook = 
+// {
+//   "title": "Shoe Dog",
+//   "author": "Phil Knight",
+//   "publishedYear": 2016,
+//   "genre": ["Autobiography", "Business"],
+//   "language": "English",
+//   "country": "United States",
+//   "rating": 4.5,
+//   "summary": "An inspiring memoir by the co-founder of Nike, detailing the journey of building a global athletic brand.",
+//   "coverImageUrl": "https://example.com/shoe_dog.jpg"
+// };
 
-async function newSecondBook(secondNewBook){
-    try{
-        const newSecBook = new Book(secondNewBook)
-        const saveBook = await newSecBook.save();
-        // console.log("Second Book: ", saveBook)
-        return saveBook
-    }catch(error){
-        throw error
-    }
-}
-// newSecondBook(secondNewBook)
+// async function newSecondBook(secondNewBook){
+//     try{
+//         const newSecBook = new Book(secondNewBook)
+//         const saveBook = await newSecBook.save();
+//         // console.log("Second Book: ", saveBook)
+//         return saveBook
+//     }catch(error){
+//         throw error
+//     }
+// }
+// // newSecondBook(secondNewBook)
+
+// app.post("/books", async(req, res) => {
+//     try{
+//     const add2ndBook = await newSecondBook(secondNewBook)
+//     if(add2ndBook){
+//         res.status(200).json({message: "Book added successfully", newSecBook : add2ndBook})
+//     } else{
+//          res.status(404).json({error: "Book not found."})
+//     }
+
+//     } catch(error){
+//         res.status(500).json({error: "Failed to fetch book."})
+//     }
+// })
+
 
 app.post("/books", async(req, res) => {
+    console.log(req.body)
     try{
-    const add2ndBook = await newSecondBook(secondNewBook)
-    if(add2ndBook){
-        res.status(200).json({message: "Book added successfully", newSecBook : add2ndBook})
-    } else{
-         res.status(404).json({error: "Book not found."})
-    }
-
+    const savedBook = await creatNewBook(req.body)
+    console.log("Saved books:- ", savedBook)
+    res.status(201).json({message: "book added successfully.", book: savedBook})
     } catch(error){
         res.status(500).json({error: "Failed to fetch book."})
     }
@@ -122,7 +140,7 @@ async function bookDetTitle(bookTitle){
 app.get("/books/:title", async(req, res) => {
     try{
         const book = await bookDetTitle(req.params.title)
-        console.log("book in app: ", book)
+        // console.log("book in app: ", book)
         if(book){
             res.json(book)
         } else{
@@ -147,7 +165,7 @@ async function bookByAuthor(author){
 app.get("/books/director/:author", async(req, res) => {
     try{
         const booksWithAuth = await bookByAuthor(req.params.author)
-        console.log(booksWithAuth)
+        // console.log(booksWithAuth)
         if(booksWithAuth){
             res.json(booksWithAuth)
         } else{
@@ -161,7 +179,7 @@ app.get("/books/director/:author", async(req, res) => {
 async function booksByGenre(genre){
     try{
     const genreBooks = await Book.find({genre: genre})
-    console.log(genreBooks)
+    // console.log(genreBooks)
     return genreBooks
     } catch(error){
         throw error
@@ -172,7 +190,7 @@ async function booksByGenre(genre){
 app.get("/books/directory/:genre", async (req, res) => {
     try{
         const booksGenre = await booksByGenre(req.params.genre);
-        console.log(booksGenre)
+        // console.log(booksGenre)
         if(booksGenre){
             res.json(booksGenre)
         } else{
@@ -197,7 +215,7 @@ async function bookByYear(publishedYear){
 app.get("/books/year/:publishedYear", async (req, res) => {
     try{
     const bookYear = await bookByYear(req.params.publishedYear)
-    console.log(bookYear)
+    // console.log(bookYear)
     if(bookYear){
         res.json(bookYear)
     } else{
@@ -247,7 +265,7 @@ async function updRatingTitleOfBook(title, dataToUpdate){
 app.post("/books/updateValues/:title", async (req, res) => {
     try{
         const updBook = await updRatingTitleOfBook(req.params.title, req.body)
-        console.log(updBook)
+        // console.log(updBook)
         if(updBook){
             res.status(200).json({message: "Restaurant updated successfully.", updRating:updBook})
         } else{
